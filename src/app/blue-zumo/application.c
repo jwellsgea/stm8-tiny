@@ -12,11 +12,7 @@ static tiny_event_subscription_t derp_sub;
 static void derp_change(void* context, const void* _args) {
   reinterpret(args, _args, const tiny_key_value_store_on_change_args_t*);
   (void)context;
-
-  if(args->key == key_right_line_detected) {
-    volatile uint8_t derpity = 10;
-    derpity++;
-  }
+  (void)args;
 }
 
 static void derp(i_tiny_key_value_store_t* store) {
@@ -34,6 +30,7 @@ void application_init(application_t* self, tiny_timer_group_t* timer_group) {
   motors_plugin_init(&self->motors_plugin, store);
   beep_plugin_init(&self->beep_plugin, store);
   line_sensors_plugin_init(&self->line_sensors_plugin, store, timer_group);
+  accelerometer_plugin_init(&self->accelerometer_plugin, store, timer_group);
 
   derp(store);
 }

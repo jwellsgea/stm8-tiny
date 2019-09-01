@@ -20,6 +20,9 @@
   pair(key_beep,                  beep_t) \
   pair(key_left_line_detected,    bool) \
   pair(key_right_line_detected,   bool) \
+  pair(key_accelerometer_x,       int16_t) \
+  pair(key_accelerometer_y,       int16_t) \
+  pair(key_accelerometer_z,       int16_t) \
 // clang-format on
 
 enumerate_ram_key_value_pairs(data_model_key_value_pairs);
