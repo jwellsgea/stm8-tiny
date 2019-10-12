@@ -12,9 +12,9 @@
 #include "tiny_crc16.h"
 #include "flash.h"
 
-#define vector_table_address 0x8004
+#define vector_table_address 0x8000
 #define vector_size 4
-#define vector_table_size 128
+#define vector_table_size 32 * vector_size
 
 bool boot_loader_app_is_valid(void) {
   // app_crc_address
@@ -29,11 +29,10 @@ typedef struct {
   uint16_t crc;
 } receive_buffer_t;
 
-static uint8_t current_block = 0;
-static uint8_t calculated_crc;
-static receive_buffer_t receive_buffer;
-
 void boot_loader_receive_app(void) {
+  uint8_t current_block = 0;
+  receive_buffer_t receive_buffer;
+
   while(true) {
     watchdog_kick();
 
@@ -41,14 +40,14 @@ void boot_loader_receive_app(void) {
       continue;
     }
 
-    calculated_crc = 0;
+    uint8_t calculated_crc = 0;
 
     for(uint8_t i = 0; i < sizeof(receive_buffer); i++) {
       ((uint8_t*)&receive_buffer)[i] = (uart1_read() << 4) | uart1_read();
       calculated_crc = tiny_crc16_calculate(calculated_crc, ((uint8_t*)&receive_buffer)[i]);
     }
 
-    if((current_block <= receive_buffer.block) && (calculated_crc == receive_buffer.crc)) {
+    if((receive_buffer.block <= current_block) && (calculated_crc == receive_buffer.crc)) {
       if(current_block == receive_buffer.block) {
         flash_write_block(
           (volatile uint8_t*)(app_address + current_block * block_size),
@@ -69,8 +68,8 @@ void boot_loader_receive_app(void) {
   }
 
   // Skip the reset vector so that we don't break the boot loader
-  for(uint8_t i = vector_size; i < vector_table_size; i++) {
-    flash_write_byte(
+  for(uint8_t i = vector_table_address + 1 * vector_size; i < vector_table_size; i += 4) {
+    flash_write_word(
       (volatile uint8_t*)(vector_table_address + i),
       *(volatile uint8_t*)(app_vector_table_address + i));
   }

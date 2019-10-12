@@ -17,6 +17,7 @@ enum {
 };
 
 // fixme this needs to be in a specific spot
+// fixme eeprom
 static const uint8_t mode;
 
 void main(void) {
@@ -28,6 +29,7 @@ void main(void) {
   clock_init();
   flash_init();
 
+  // fixme eeprom
   flash_write_byte((volatile uint8_t*)mode, app);
 
   boot_loader_receive_app();
